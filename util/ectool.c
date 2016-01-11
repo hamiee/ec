@@ -6457,10 +6457,12 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	/*
 	if (acquire_gec_lock(GEC_LOCK_TIMEOUT_SECS) < 0) {
 		fprintf(stderr, "Could not acquire GEC lock.\n");
 		exit(1);
 	}
+	*/
 
 	if (comm_init(interfaces, device_name)) {
 		fprintf(stderr, "Couldn't find EC\n");
@@ -6480,6 +6482,6 @@ int main(int argc, char *argv[])
 	print_help(argv[0], 0);
 
 out:
-	release_gec_lock();
+	//release_gec_lock();
 	return !!rv;
 }

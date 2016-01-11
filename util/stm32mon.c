@@ -78,7 +78,6 @@ struct stm32_def {
 
 #define DEFAULT_TIMEOUT 4 /* seconds */
 #define DEFAULT_BAUDRATE B38400
-#define PAGE_SIZE 256
 #define INVALID_I2C_ADAPTER -1
 
 /* store custom parameters */

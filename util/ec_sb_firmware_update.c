@@ -761,10 +761,11 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	/*
 	if (acquire_gec_lock(GEC_LOCK_TIMEOUT_SECS) < 0) {
 		printf("Could not acquire GEC lock.\n");
 		return -1;
-	}
+	}*/
 
 	if (comm_init(interfaces, NULL)) {
 		printf("Couldn't find EC\n");
@@ -808,7 +809,7 @@ int main(int argc, char *argv[])
 	if (fw_update.flags & F_POWERD_DISABLED)
 		rv |= restore_power_management();
 out:
-	release_gec_lock();
+	//release_gec_lock();
 	if (rv)
 		return -1;
 	else

@@ -7,23 +7,23 @@
 #
 
 # Toolchain configuration
-HOST_CROSS_COMPILE ?= x86_64-pc-linux-gnu-
+HOST_CROSS_COMPILE ?= aarch64-linux-android-
 
-CC=$(CROSS_COMPILE)gcc
-CPP=$(CROSS_COMPILE)cpp
-LD=$(CROSS_COMPILE)ld
+CC=$(CROSS_COMPILE)gcc -fPIE
+CPP=$(CROSS_COMPILE)cpp -fPIE
+LD=$(CROSS_COMPILE)ld -pie
 NM=$(CROSS_COMPILE)nm
 OBJCOPY=$(CROSS_COMPILE)objcopy
 OBJDUMP=$(CROSS_COMPILE)objdump
 PKG_CONFIG?=pkg-config
 BUILDCC?=gcc
-HOSTCC?=$(HOST_CROSS_COMPILE)gcc
+HOSTCC?=$(HOST_CROSS_COMPILE)gcc -fPIE -pie
 
 CFLAGS_WARN=-Wall -Werror -Wundef -Wstrict-prototypes -Wno-trigraphs      \
             -fno-strict-aliasing -fno-common                              \
             -Werror-implicit-function-declaration -Wno-format-security    \
             -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow
-CFLAGS_DEBUG= -g
+CFLAGS_DEBUG= -g -fPIE
 CFLAGS_INCLUDE=$(foreach i,$(includes),-I$(i) ) -I.
 CFLAGS_TEST=$(if $(TEST_BUILD),-DTEST_BUILD \
                                -DTEST_TASKFILE=$(PROJECT).tasklist,) \
@@ -36,12 +36,12 @@ CFLAGS_DEFINE=-DOUTDIR=$(out) -DCHIP=$(CHIP) -DBOARD_TASKFILE=$(_tsk_lst_file) \
               -DBOARD=$(BOARD) -DCORE=$(CORE) -DPROJECT=$(PROJECT) \
               -DCHIP_VARIANT=$(CHIP_VARIANT) -DCHIP_FAMILY=$(CHIP_FAMILY) \
               -DBOARD_$(UC_BOARD) -DCHIP_$(UC_CHIP) -DCORE_$(UC_CORE) \
-              -DCHIP_VARIANT_$(UC_CHIP_VARIANT) -DCHIP_FAMILY_$(UC_CHIP_FAMILY)
+              -DCHIP_VARIANT_$(UC_CHIP_VARIANT) -DCHIP_FAMILY_$(UC_CHIP_FAMILY) -fPIE
 CPPFLAGS=$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(CFLAGS_TEST) \
-	 $(EXTRA_CFLAGS) $(CFLAGS_COVERAGE)
+	 $(EXTRA_CFLAGS) $(CFLAGS_COVERAGE) -fPIE
 CFLAGS=$(CPPFLAGS) $(CFLAGS_CPU) $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_y)
 CFLAGS+= -ffunction-sections -fshort-wchar
-CFLAGS+= -fno-delete-null-pointer-checks -fconserve-stack
+CFLAGS+= -fno-delete-null-pointer-checks -fconserve-stack -fPIE
 
 FTDIVERSION=$(shell $(PKG_CONFIG) --modversion libftdi1 2>/dev/null)
 ifneq ($(FTDIVERSION),)
@@ -53,9 +53,9 @@ endif
 LIBFTDI_CFLAGS=$(shell $(PKG_CONFIG) --cflags lib${LIBFTDI_NAME})
 LIBFTDI_LDLIBS=$(shell $(PKG_CONFIG) --libs   lib${LIBFTDI_NAME})
 
-BUILD_CFLAGS= $(LIBFTDI_CFLAGS) $(CPPFLAGS) -O3 $(CFLAGS_DEBUG) $(CFLAGS_WARN)
+BUILD_CFLAGS= $(LIBFTDI_CFLAGS) $(CPPFLAGS) -O3 $(CFLAGS_DEBUG) $(CFLAGS_WARN) -fPIE
 HOST_CFLAGS=$(CPPFLAGS) -O3 $(CFLAGS_DEBUG) $(CFLAGS_WARN) -DHOST_TOOLS_BUILD
-LDFLAGS=-nostdlib -Wl,-X -Wl,--gc-sections -Wl,--build-id=none $(LDFLAGS_EXTRA)
-BUILD_LDFLAGS=$(LIBFTDI_LDLIBS)
+LDFLAGS=-nostdlib -Wl,-X -Wl,--gc-sections -Wl,--build-id=none $(LDFLAGS_EXTRA) -Wl,-pie
+BUILD_LDFLAGS=$(LIBFTDI_LDLIBS) -Wl,-pie
 HOST_TEST_LDFLAGS=-T core/host/host_exe.lds -lrt -pthread -rdynamic -lm\
 		  $(if $(TEST_COVERAGE),-fprofile-arcs,)
